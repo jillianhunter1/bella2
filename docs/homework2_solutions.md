@@ -70,7 +70,7 @@ $$
 #### Binary Expressions (Arithmetic & Array Concatenation)
 
 $$
-\frac{op \in \{+, -, *, /, \%, \text{**}\} \quad m \vdash e_1 \Downarrow \mathsf{Num}\;x \quad m \vdash e_2 \Downarrow \mathsf{Num}\;y}{m \vdash [| e_1\;op\;e_2 |] \Downarrow \mathsf{Num}\;(op(x,y))}
+\frac{op \in \{+, -, *, /, \mathbin{\%}, \text{**}\} \quad m \vdash e_1 \Downarrow \mathsf{Num}\;x \quad m \vdash e_2 \Downarrow \mathsf{Num}\;y}{m \vdash [| e_1\;op\;e_2 |] \Downarrow \mathsf{Num}\;(op(x,y))}
 $$
 
 $$
