@@ -1,0 +1,212 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,amsfonts}
+\usepackage{stmaryrd}
+\usepackage{hyperxmp}
+\usepackage{hyperref}
+\usepackage{microtype}
+\usepackage{booktabs}
+
+\title{\textbf{Homework \#2: Programming Language Foundations}\\ \Large Operational and Denotational Semantics for Bella 2}
+\author{\textbf{Course:} CMSI 585 \quad | \quad \textbf{Student:} Jillian Hunter}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\hrule
+\vspace{1.5em}
+
+\section*{Problem 1: Operational Semantics for Bella 2}
+
+The semantic domain for runtime values $\mathsf{Value}$ in Bella 2 extends Bella with Booleans and Arrays:
+
+\begin{equation*}
+\frac{}{\mathsf{Undef} : \mathsf{Value}}
+\qquad
+\frac{x : \mathsf{Real}}{\mathsf{Num}\;x : \mathsf{Value}}
+\qquad
+\frac{b : \mathsf{Bool}}{\mathsf{Bool}\;b : \mathsf{Value}}
+\qquad
+\frac{v_1,\ldots,v_n : \mathsf{Value}}{\mathsf{Array}\;[v_1,\ldots,v_n] : \mathsf{Value}}
+\end{equation*}
+
+\begin{equation*}
+\frac{p : \mathsf{Ide}^* \quad e : \mathsf{Exp}}{\mathsf{Fun}\;p\;e : \mathsf{Value}}
+\qquad
+\frac{f : \mathsf{Value}^* \to \mathsf{Value}}{\mathsf{StdFun}\;f : \mathsf{Value}}
+\end{equation*}
+
+\subsection*{1. Expressions ($m \vdash e \Downarrow v$)}
+
+\subsubsection*{Numerals and Booleans}
+\begin{equation*}
+\frac{}{m \vdash \llbracket n \rrbracket \Downarrow \mathsf{Num}\;n}
+\qquad
+\frac{}{m \vdash \llbracket \text{true} \rrbracket \Downarrow \mathsf{Bool}\;\text{true}}
+\qquad
+\frac{}{m \vdash \llbracket \text{false} \rrbracket \Downarrow \mathsf{Bool}\;\text{false}}
+\end{equation*}
+
+\subsubsection*{Identifiers}
+\begin{equation*}
+\frac{m(i) = v}{m \vdash \llbracket i \rrbracket \Downarrow v}
+\end{equation*}
+
+\subsubsection*{Unary Expressions}
+\begin{equation*}
+\frac{m \vdash e \Downarrow \mathsf{Num}\;x}{m \vdash \llbracket -e \rrbracket \Downarrow \mathsf{Num}\;(-x)}
+\qquad
+\frac{m \vdash e \Downarrow \mathsf{Bool}\;b}{m \vdash \llbracket !e \rrbracket \Downarrow \mathsf{Bool}\;(\neg b)}
+\end{equation*}
+
+\begin{equation*}
+\frac{m \vdash e \Downarrow \mathsf{Num}\;x \quad x = 0}{m \vdash \llbracket !e \rrbracket \Downarrow \mathsf{Bool}\;\text{true}}
+\qquad
+\frac{m \vdash e \Downarrow \mathsf{Num}\;x \quad x \neq 0}{m \vdash \llbracket !e \rrbracket \Downarrow \mathsf{Bool}\;\text{false}}
+\end{equation*}
+
+\subsubsection*{Binary Expressions (Arithmetic \& Array Concatenation)}
+\begin{equation*}
+\frac{op \in \{+, -, *, /, \%, \text{**}\} \quad m \vdash e_1 \Downarrow \mathsf{Num}\;x \quad m \vdash e_2 \Downarrow \mathsf{Num}\;y}{m \vdash \llbracket e_1\;op\;e_2 \rrbracket \Downarrow \mathsf{Num}\;(op(x,y))}
+\end{equation*}
+
+\begin{equation*}
+\frac{m \vdash e_1 \Downarrow \mathsf{Array}\;A_1 \quad m \vdash e_2 \Downarrow \mathsf{Array}\;A_2}{m \vdash \llbracket e_1 + e_2 \rrbracket \Downarrow \mathsf{Array}\;(A_1 \mathbin{\Vert} A_2)}
+\end{equation*}
+
+\subsubsection*{Binary Relational \& Equality}
+\begin{equation*}
+\frac{op \in \{<, \le, >, \ge\} \quad m \vdash e_1 \Downarrow \mathsf{Num}\;x \quad m \vdash e_2 \Downarrow \mathsf{Num}\;y}{m \vdash \llbracket e_1\;op\;e_2 \rrbracket \Downarrow \mathsf{Bool}\;(op(x,y))}
+\end{equation*}
+
+\begin{equation*}
+\frac{m \vdash e_1 \Downarrow v_1 \quad m \vdash e_2 \Downarrow v_2}{m \vdash \llbracket e_1 \text{ == } e_2 \rrbracket \Downarrow \mathsf{Bool}\;(v_1 = v_2)}
+\qquad
+\frac{m \vdash e_1 \Downarrow v_1 \quad m \vdash e_2 \Downarrow v_2}{m \vdash \llbracket e_1 \text{ != } e_2 \rrbracket \Downarrow \mathsf{Bool}\;(v_1 \neq v_2)}
+\end{equation*}
+
+\subsubsection*{Short-circuit Logical Operators}
+\begin{equation*}
+\frac{m \vdash e_1 \Downarrow v \quad \text{isFalsy}(v)}{m \vdash \llbracket e_1 \land e_2 \rrbracket \Downarrow v}
+\qquad
+\frac{m \vdash e_1 \Downarrow v \quad \neg\text{isFalsy}(v) \quad m \vdash e_2 \Downarrow v_2}{m \vdash \llbracket e_1 \land e_2 \rrbracket \Downarrow v_2}
+\end{equation*}
+
+\begin{equation*}
+\frac{m \vdash e_1 \Downarrow v \quad \neg\text{isFalsy}(v)}{m \vdash \llbracket e_1 \lor e_2 \rrbracket \Downarrow v}
+\qquad
+\frac{m \vdash e_1 \Downarrow v \quad \text{isFalsy}(v) \quad m \vdash e_2 \Downarrow v_2}{m \vdash \llbracket e_1 \lor e_2 \rrbracket \Downarrow v_2}
+\end{equation*}
+Where $\text{isFalsy}(v)$ holds iff $v = \mathsf{Bool}\;\text{false}$ or $v = \mathsf{Num}\;0$.
+
+\subsubsection*{Conditional Expression}
+\begin{equation*}
+\frac{m \vdash e \Downarrow v \quad \neg\text{isFalsy}(v) \quad m \vdash e_1 \Downarrow v_1}{m \vdash \llbracket e \; ? \; e_1 : e_2 \rrbracket \Downarrow v_1}
+\qquad
+\frac{m \vdash e \Downarrow v \quad \text{isFalsy}(v) \quad m \vdash e_2 \Downarrow v_2}{m \vdash \llbracket e \; ? \; e_1 : e_2 \rrbracket \Downarrow v_2}
+\end{equation*}
+
+\subsubsection*{Array Literal and Subscripting}
+\begin{equation*}
+\frac{(m \vdash e_i \Downarrow v_i)_{i=1}^k}{m \vdash \llbracket [e_1,\ldots,e_k] \rrbracket \Downarrow \mathsf{Array}\;[v_1,\ldots,v_k]}
+\end{equation*}
+
+\begin{equation*}
+\frac{m \vdash e_1 \Downarrow \mathsf{Array}\;[v_0,\ldots,v_{k-1}] \quad m \vdash e_2 \Downarrow \mathsf{Num}\;i \quad 0 \le i < k \quad i \in \mathbb{Z}}{m \vdash \llbracket e_1[e_2] \rrbracket \Downarrow v_i}
+\end{equation*}
+
+\subsubsection*{Function Calls}
+\begin{equation*}
+\frac{(m \vdash e_j \Downarrow a_j)_{j=1}^k \quad m(i) = \mathsf{Fun}\;(p_1,\ldots,p_k)\;e' \quad m[p_j \mapsto a_j]_{j=1}^k \vdash e' \Downarrow v}{m \vdash \llbracket \text{call}\;i\;e_1\ldots e_k \rrbracket \Downarrow v}
+\end{equation*}
+
+\begin{equation*}
+\frac{(m \vdash e_j \Downarrow a_j)_{j=1}^k \quad m(i) = \mathsf{StdFun}\;f}{m \vdash \llbracket \text{call}\;i\;e_1\ldots e_k \rrbracket \Downarrow f(a_1,\ldots,a_k)}
+\end{equation*}
+
+\newpage
+\subsection*{2. Statements ($(m,o) \vdash s \Downarrow (m',o')$)}
+
+\subsubsection*{Variable \& Function Declarations}
+\begin{equation*}
+\frac{m \vdash e \Downarrow v \quad m(i) = \mathsf{Undef}}{(m,o) \vdash \llbracket \text{let } i = e \rrbracket \Downarrow (m[i \mapsto v], o)}
+\end{equation*}
+
+\begin{equation*}
+\frac{m(i) = \mathsf{Undef}}{(m,o) \vdash \llbracket \text{func } i\;p_1\ldots p_k = e \rrbracket \Downarrow (m[i \mapsto \mathsf{Fun}\;(p_1,\ldots,p_k)\;e], o)}
+\end{equation*}
+
+\subsubsection*{Assignment \& Print}
+\begin{equation*}
+\frac{m \vdash e \Downarrow v \quad m(i) \neq \mathsf{Undef} \quad i \neq \text{pi}}{(m,o) \vdash \llbracket i = e \rrbracket \Downarrow (m[i \mapsto v], o)}
+\qquad
+\frac{m \vdash e \Downarrow v}{(m,o) \vdash \llbracket \text{print } e \rrbracket \Downarrow (m, o \cdot v)}
+\end{equation*}
+
+\subsubsection*{While Loop \& Blocks}
+\begin{equation*}
+\frac{m \vdash e \Downarrow v \quad \text{isFalsy}(v)}{(m,o) \vdash \llbracket \text{while } e\;b \rrbracket \Downarrow (m,o)}
+\end{equation*}
+
+\begin{equation*}
+\frac{m \vdash e \Downarrow v \quad \neg\text{isFalsy}(v) \quad (m,o) \vdash b \Downarrow (m',o') \quad (m',o') \vdash \llbracket \text{while } e\;b \rrbracket \Downarrow (m'',o'')}{(m,o) \vdash \llbracket \text{while } e\;b \rrbracket \Downarrow (m'',o'')}
+\end{equation*}
+
+\begin{equation*}
+\frac{((m_j,o_j) \vdash s_j \Downarrow (m_{j+1},o_{j+1}))_{j=1}^k}{(m_1,o_1) \vdash \llbracket \text{block } s_1,\ldots,s_k \rrbracket \Downarrow (m_{k+1}, o_{k+1})}
+\end{equation*}
+
+\vspace{2em}
+\hrule
+\vspace{2em}
+
+\section*{Problem 2: Denotational Semantics for Bella 2}
+
+\subsection*{Semantic Domains}
+\begin{align*}
+\mathbf{Val} &= \mathbb{R} + \mathbb{B} + \mathbf{Val}^* + (\mathbf{Val}^* \to \mathbf{Val}) \\
+\mathbf{Mem} &= \mathsf{Ide} \to \mathbf{Val}_\bot \\
+\mathbf{Out} &= \mathbf{Val}^* \\
+\mathbf{State} &= \mathbf{Mem} \times \mathbf{Out}
+\end{align*}
+
+\subsection*{Semantic Valuation Functions}
+\begin{align*}
+\mathcal{E} &: \mathsf{Expression} \to \mathbf{Mem} \to \mathbf{Val} \\
+\mathcal{S} &: \mathsf{Statement} \to \mathbf{State} \to \mathbf{State} \\
+\mathcal{B} &: \mathsf{Block} \to \mathbf{State} \to \mathbf{State} \\
+\mathcal{P} &: \mathsf{Program} \to \mathbf{Out}
+\end{align*}
+
+\subsection*{Expression Valuation ($\mathcal{E}\llbracket e \rrbracket m$)}
+\begin{align*}
+\mathcal{E}\llbracket n \rrbracket m &= n \\
+\mathcal{E}\llbracket \text{true} \rrbracket m &= \text{true} \\
+\mathcal{E}\llbracket \text{false} \rrbracket m &= \text{false} \\
+\mathcal{E}\llbracket i \rrbracket m &= m(i) \\
+\mathcal{E}\llbracket -e \rrbracket m &= -\mathcal{E}\llbracket e \rrbracket m \\
+\mathcal{E}\llbracket !e \rrbracket m &= \neg (\text{isTruthy}(\mathcal{E}\llbracket e \rrbracket m)) \\
+\mathcal{E}\llbracket e_1 \; op \; e_2 \rrbracket m &= \text{applyOp}(op, \mathcal{E}\llbracket e_1 \rrbracket m, \mathcal{E}\llbracket e_2 \rrbracket m) \\
+\mathcal{E}\llbracket e_1 \land e_2 \rrbracket m &= \text{let } v = \mathcal{E}\llbracket e_1 \rrbracket m \text{ in if } \text{isFalsy}(v) \text{ then } v \text{ else } \mathcal{E}\llbracket e_2 \rrbracket m \\
+\mathcal{E}\llbracket e_1 \lor e_2 \rrbracket m &= \text{let } v = \mathcal{E}\llbracket e_1 \rrbracket m \text{ in if } \text{isTruthy}(v) \text{ then } v \text{ else } \mathcal{E}\llbracket e_2 \rrbracket m \\
+\mathcal{E}\llbracket e \; ? \; e_1 : e_2 \rrbracket m &= \text{if } \text{isTruthy}(\mathcal{E}\llbracket e \rrbracket m) \text{ then } \mathcal{E}\llbracket e_1 \rrbracket m \text{ else } \mathcal{E}\llbracket e_2 \rrbracket m \\
+\mathcal{E}\llbracket [e_1,\ldots,e_k] \rrbracket m &= [\mathcal{E}\llbracket e_1 \rrbracket m, \ldots, \mathcal{E}\llbracket e_k \rrbracket m] \\
+\mathcal{E}\llbracket e_1[e_2] \rrbracket m &= (\mathcal{E}\llbracket e_1 \rrbracket m)[\mathcal{E}\llbracket e_2 \rrbracket m] \\
+\mathcal{E}\llbracket i \; e_1 \ldots e_k \rrbracket m &= (m(i))([\mathcal{E}\llbracket e_1 \rrbracket m, \ldots, \mathcal{E}\llbracket e_k \rrbracket m])
+\end{align*}
+
+\subsection*{Statement, Block \& Program Valuation Functions}
+\begin{align*}
+\mathcal{S}\llbracket \text{let } i=e \rrbracket (m, o) &= (m[i \mapsto \mathcal{E}\llbracket e \rrbracket m],\, o) \\
+\mathcal{S}\llbracket \text{func } i\;p_1\ldots p_k = e \rrbracket (m, o) &= \left(m\left[i \mapsto \lambda [a_1,\ldots,a_k].\,\mathcal{E}\llbracket e \rrbracket (m[p_j \mapsto a_j]_{j=1}^k)\right],\, o\right) \\
+\mathcal{S}\llbracket i = e \rrbracket (m, o) &= (m[i \mapsto \mathcal{E}\llbracket e \rrbracket m],\, o) \\
+\mathcal{S}\llbracket \text{print } e \rrbracket (m, o) &= (m,\, o \mathbin{\cdot} \mathcal{E}\llbracket e \rrbracket m) \\
+\mathcal{S}\llbracket \text{while } e\;b \rrbracket (m, o) &= \text{FIX}(\lambda f.\,\lambda (m',o').\,\text{if } \text{isTruthy}(\mathcal{E}\llbracket e \rrbracket m') \text{ then } f(\mathcal{B}\llbracket b \rrbracket (m',o')) \text{ else } (m',o'))\,(m,o) \\
+\mathcal{B}\llbracket \text{block } s_1 \ldots s_k \rrbracket &= \mathcal{S}\llbracket s_k \rrbracket \circ \cdots \circ \mathcal{S}\llbracket s_1 \rrbracket \\
+\mathcal{P}\llbracket \text{program } b \rrbracket &= \pi_2(\mathcal{B}\llbracket b \rrbracket (m_0, []))
+\end{align*}
+
+\end{document}
