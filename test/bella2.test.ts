@@ -80,6 +80,18 @@ describe("Bella 2 Interpreter Complete Test Suite", () => {
           new b2.BinaryExpression(">=", new b2.Numeral(10), new b2.Numeral(10))
         ),
         new b2.PrintStatement(
+          new b2.BinaryExpression("<", new b2.Numeral(5), new b2.Numeral(2))
+        ),
+        new b2.PrintStatement(
+          new b2.BinaryExpression("<=", new b2.Numeral(6), new b2.Numeral(5))
+        ),
+        new b2.PrintStatement(
+          new b2.BinaryExpression(">", new b2.Numeral(3), new b2.Numeral(10))
+        ),
+        new b2.PrintStatement(
+          new b2.BinaryExpression(">=", new b2.Numeral(8), new b2.Numeral(10))
+        ),
+        new b2.PrintStatement(
           new b2.BinaryExpression("==", new b2.Numeral(10), new b2.Numeral(10))
         ),
         new b2.PrintStatement(
@@ -88,7 +100,7 @@ describe("Bella 2 Interpreter Complete Test Suite", () => {
       ])
     );
     assert.deepStrictEqual(b2.interpret(prog), [
-      8, 6, 42, 4, 2, 16, true, true, true, true, true, true,
+      8, 6, 42, 4, 2, 16, true, true, true, true, false, false, false, false, true, true,
     ]);
   });
 
@@ -124,6 +136,13 @@ describe("Bella 2 Interpreter Complete Test Suite", () => {
         ),
         new b2.PrintStatement(
           new b2.ConditionalExpression(
+            new b2.Numeral(5),
+            new b2.Numeral(10),
+            new b2.Numeral(20)
+          )
+        ),
+        new b2.PrintStatement(
+          new b2.ConditionalExpression(
             new b2.BooleanLiteral(false),
             new b2.Numeral(10),
             new b2.Numeral(20)
@@ -131,7 +150,7 @@ describe("Bella 2 Interpreter Complete Test Suite", () => {
         ),
       ])
     );
-    assert.deepStrictEqual(b2.interpret(prog), [10, 20]);
+    assert.deepStrictEqual(b2.interpret(prog), [10, 10, 20]);
   });
 
   it("handles array literals, subscript expressions, array concatenation, and equality", () => {
@@ -145,7 +164,6 @@ describe("Bella 2 Interpreter Complete Test Suite", () => {
         new b2.PrintStatement(
           new b2.SubscriptExpression(new b2.Identifier("arr"), new b2.Numeral(1))
         ),
-        // Array concatenation
         new b2.PrintStatement(
           new b2.BinaryExpression(
             "+",
@@ -153,11 +171,17 @@ describe("Bella 2 Interpreter Complete Test Suite", () => {
             new b2.ArrayLiteral([new b2.Numeral(40)])
           )
         ),
-        // Array equality
         new b2.PrintStatement(
           new b2.BinaryExpression(
             "==",
             new b2.ArrayLiteral([new b2.Numeral(1), new b2.Numeral(2)]),
+            new b2.ArrayLiteral([new b2.Numeral(1), new b2.Numeral(2)])
+          )
+        ),
+        new b2.PrintStatement(
+          new b2.BinaryExpression(
+            "==",
+            new b2.ArrayLiteral([new b2.Numeral(1)]),
             new b2.ArrayLiteral([new b2.Numeral(1), new b2.Numeral(2)])
           )
         ),
@@ -168,6 +192,13 @@ describe("Bella 2 Interpreter Complete Test Suite", () => {
             new b2.ArrayLiteral([new b2.Numeral(1), new b2.Numeral(2)])
           )
         ),
+        new b2.PrintStatement(
+          new b2.BinaryExpression(
+            "!=",
+            new b2.ArrayLiteral([new b2.Numeral(1), new b2.Numeral(2)]),
+            new b2.ArrayLiteral([new b2.Numeral(1), new b2.Numeral(2)])
+          )
+        ),
       ])
     );
     assert.deepStrictEqual(b2.interpret(prog), [
@@ -175,7 +206,9 @@ describe("Bella 2 Interpreter Complete Test Suite", () => {
       20,
       [10, 20, 30, 40],
       true,
+      false,
       true,
+      false,
     ]);
   });
 
@@ -186,17 +219,27 @@ describe("Bella 2 Interpreter Complete Test Suite", () => {
           new b2.Call(new b2.Identifier("sqrt"), [new b2.Numeral(16)])
         ),
         new b2.PrintStatement(
+          new b2.Call(new b2.Identifier("sin"), [new b2.Numeral(0)])
+        ),
+        new b2.PrintStatement(
+          new b2.Call(new b2.Identifier("cos"), [new b2.Numeral(0)])
+        ),
+        new b2.PrintStatement(
+          new b2.Call(new b2.Identifier("ln"), [new b2.Numeral(1)])
+        ),
+        new b2.PrintStatement(
+          new b2.Call(new b2.Identifier("exp"), [new b2.Numeral(0)])
+        ),
+        new b2.PrintStatement(
           new b2.Call(new b2.Identifier("hypot"), [new b2.Numeral(3), new b2.Numeral(4)])
         ),
         new b2.PrintStatement(new b2.Identifier("pi")),
       ])
     );
-    assert.deepStrictEqual(b2.interpret(prog), [4, 5, Math.PI]);
+    assert.deepStrictEqual(b2.interpret(prog), [4, 0, 1, 0, 1, 5, Math.PI]);
   });
 
   it("handles user functions including recursion", () => {
-    // function double(x) = x * 2;
-    // function fact(n) = n <= 1 ? 1 : n * fact(n - 1);
     const prog = new b2.Program(
       new b2.Block([
         new b2.FunctionDeclaration(
@@ -231,7 +274,6 @@ describe("Bella 2 Interpreter Complete Test Suite", () => {
   });
 
   it("handles while loops correctly", () => {
-    // let i = 3; while i > 0 { print i; i = i - 1; }
     const prog = new b2.Program(
       new b2.Block([
         new b2.VariableDeclaration(new b2.Identifier("i"), new b2.Numeral(3)),
@@ -253,12 +295,14 @@ describe("Bella 2 Interpreter Complete Test Suite", () => {
   it("throws appropriate runtime errors for invalid operations", () => {
     const emptyMem = new Map();
 
-    // Undeclared identifier
     assert.throws(() => {
       new b2.Identifier("ghost").interpret(emptyMem);
     }, /Identifier 'ghost' was undeclared/);
 
-    // Re-declaring variable
+    assert.throws(() => {
+      new b2.Call(new b2.Identifier("ghost"), []).interpret(emptyMem);
+    }, /Identifier was undeclared/);
+
     assert.throws(() => {
       const prog = new b2.Program(
         new b2.Block([
@@ -269,7 +313,6 @@ describe("Bella 2 Interpreter Complete Test Suite", () => {
       b2.interpret(prog);
     }, /Identifier 'a' already declared/);
 
-    // Re-declaring function
     assert.throws(() => {
       const prog = new b2.Program(
         new b2.Block([
@@ -280,7 +323,6 @@ describe("Bella 2 Interpreter Complete Test Suite", () => {
       b2.interpret(prog);
     }, /Identifier 'f' already declared/);
 
-    // Assigning undeclared or pi
     assert.throws(() => {
       const prog = new b2.Program(
         new b2.Block([
@@ -299,7 +341,6 @@ describe("Bella 2 Interpreter Complete Test Suite", () => {
       b2.interpret(prog);
     }, /Cannot reassign read-only identifier 'pi'/);
 
-    // Calling non-function or wrong parameter count
     assert.throws(() => {
       const prog = new b2.Program(
         new b2.Block([
@@ -324,7 +365,6 @@ describe("Bella 2 Interpreter Complete Test Suite", () => {
       b2.interpret(prog);
     }, /Wrong number of arguments/);
 
-    // Invalid Unary / Binary operations
     assert.throws(() => {
       new b2.UnaryExpression("-", new b2.BooleanLiteral(true)).interpret(emptyMem);
     }, /Unary '-' requires a numeric operand/);
@@ -365,7 +405,6 @@ describe("Bella 2 Interpreter Complete Test Suite", () => {
       new b2.BinaryExpression("invalid", new b2.Numeral(1), new b2.Numeral(2)).interpret(emptyMem);
     }, /Unknown or invalid binary operator 'invalid'/);
 
-    // Subscript errors
     assert.throws(() => {
       new b2.SubscriptExpression(new b2.Numeral(100), new b2.Numeral(0)).interpret(emptyMem);
     }, /Target is not an array/);

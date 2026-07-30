@@ -73,18 +73,6 @@ export class FunctionCall {
   ) {}
 }
 
-export type Statement =
-  | VariableDeclaration
-  | FunctionDeclaration
-  | Assignment
-  | PrintStatement
-  | WhileStatement;
+export type Statement = VariableDeclaration | FunctionDeclaration | Assignment | PrintStatement | WhileStatement;
 
-export type Expression =
-  | number
-  | boolean
-  | Variable
-  | UnaryExpression
-  | BinaryExpression
-  | TernaryExpression
-  | FunctionCall;
+export type Expression = number | boolean | Variable | UnaryExpression | BinaryExpression | TernaryExpression | FunctionCall;
