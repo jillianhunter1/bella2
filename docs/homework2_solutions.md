@@ -20,9 +20,9 @@ $$
 $$
 
 $$
-\frac{p\!:\mathsf{Ide^*}\;\;\;e\!:\mathsf{Exp}}{\mathsf{Fun}\;p\;e\!: \mathsf{Value}}
+\frac{p\!:\mathsf{Ide}^{*}\;\;\;e\!:\mathsf{Exp}}{\mathsf{Fun}\;p\;e\!: \mathsf{Value}}
 \quad
-\frac{f\!:\mathsf{Value^* \rightarrow Value}}{\mathsf{StdFun}\;f\!: \mathsf{Value}}
+\frac{f\!:\mathsf{Value}^{*} \to \mathsf{Value}}{\mathsf{StdFun}\;f\!: \mathsf{Value}}
 $$
 
 The transition evaluation relation for expressions $m \vdash e \Downarrow v$ and state transitions $(m,o) \vdash s \Downarrow (m',o')$ are defined as follows:
@@ -82,7 +82,7 @@ $$\frac{(m \vdash e_i \Downarrow v_i)_{i=1}^k}{m \vdash [\![\mathtt{[}e_1,\ldots
 $$\frac{m \vdash e_1 \Downarrow \mathsf{Array}\;[v_0,\ldots,v_{k-1}] \;\;\; m \vdash e_2 \Downarrow \mathsf{Num}\;i \;\;\; 0 \leq i < k \;\;\; i \in \mathbb{Z}}{m \vdash [\![e_1\mathtt{[}e_2\mathtt{]}]\!] \Downarrow v_i}$$
 
 #### Function Call
-$$\frac{(m \vdash e_j \Downarrow a_i)_{j=1}^k \;\;\; m(i) = \mathsf{Fun}\;(p_1,\ldots,p_k)\;e' \;\;\; m[p_j \mapsto a_j]_{j=1}^k \vdash e' \Downarrow v}{m \vdash [\![\mathtt{call}\;i\;e_1\ldots e_k]\!] \Downarrow v}$$
+$$\frac{(m \vdash e_j \Downarrow a_j)_{j=1}^k \;\;\; m(i) = \mathsf{Fun}\;(p_1,\ldots,p_k)\;e' \;\;\; m[p_j \mapsto a_j]_{j=1}^k \vdash e' \Downarrow v}{m \vdash [\![\mathtt{call}\;i\;e_1\ldots e_k]\!] \Downarrow v}$$
 
 $$\frac{(m \vdash e_j \Downarrow a_j)_{j=1}^k \;\;\; m(i) = \mathsf{StdFun}\;f}{m \vdash [\![\mathtt{call}\;i\;e_1\ldots e_k]\!] \Downarrow f(a_1,\ldots,a_k)}$$
 
@@ -114,9 +114,9 @@ $$\frac{((m_j,o_j) \vdash s_j \Downarrow (m_{j+1},o_{j+1}))_{j=1}^k}{(m_1,o_1) \
 In Denotational Semantics, syntactic constructs map directly to mathematical functions over semantic domains.
 
 ### Semantic Domains
-- $\mathbf{Val} = \mathbb{R} + \mathbb{B} + \mathbf{Val}^* + (\mathbf{Val}^* \to \mathbf{Val})$
+- $\mathbf{Val} = \mathbb{R} + \mathbb{B} + \mathbf{Val}^{*} + (\mathbf{Val}^{*} \to \mathbf{Val})$
 - $\mathbf{Mem} = \textsf{Ide} \to \mathbf{Val}_\bot$
-- $\mathbf{Out} = \mathbf{Val}^*$
+- $\mathbf{Out} = \mathbf{Val}^{*}$
 - $\mathbf{State} = \mathbf{Mem} \times \mathbf{Out}$
 
 ### Semantic Valuation Functions
